@@ -2,20 +2,20 @@
 /*global define*/
 define(
     [
-        'Magento_Checkout/js/view/payment/default',
-        'Dibs_Flexwin/js/action/set-payment-method',
-        'Magento_Checkout/js/action/select-payment-method',
-        'Magento_Checkout/js/checkout-data',
-        'Magento_Customer/js/customer-data',
         'ko',
         'jquery',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'underscore',
+        'Magento_Checkout/js/view/payment/default',
+        'Magento_Checkout/js/action/select-payment-method',
+        'Magento_Checkout/js/model/quote',
+        'Magento_Checkout/js/checkout-data',
+        'mage/url'
     ],
-    function (Component, setPaymentMethodAction, selectPaymentMethodAction,
-              checkoutData, storage, ko, $, additionalValidators) {
+    function (ko, $, _, Component, selectPaymentMethodAction, quote, checkoutData, url) {
         'use strict';
         return Component.extend({
             redirectAfterPlaceOrder: false,
+            placeOrderResult: null,
 
             defaults: {
                 template: 'Dibs_Flexwin/payment/dibs_flexwin',
@@ -24,8 +24,7 @@ define(
             },
 
             getDibsPaytype: ko.observable(function () {
-                var obj = storage.get('checkout-data');
-                return obj.paytypeId;
+                return checkoutData.getPaytypeId();
 
             }),
 
@@ -95,21 +94,47 @@ define(
                 var urlPrefix = window.checkoutConfig.payment.dibsFlexwin.cdnUrlLogoPrefix + imgNumber + '.png';
                 return urlPrefix;
             },
-            
-            placeOrder: function () {
-                var self = this;
-                var obj = storage.get('checkout-data');
-                if (self.validate() && additionalValidators.validate() ) {
-                    self.selectPaymentMethod();
-                    setPaymentMethodAction(this.messageContainer, self.requestData,
-                        _.find(this.getEnabledPaytypes(), function (card) {
-                            return card.id == obj.paytypeId;
-                        }).paytype);
-                }
+
+            getPlaceOrderDeferredObject: function () {
+                return this._super().done(function(data) {
+                    // store response for use in afterPlaceOrder
+                    this.placeOrderResult = data;
+                }.bind(this));
+            },
+
+            afterPlaceOrder: function() {
+                var paytype = _.find(this.getEnabledPaytypes(), function (card) {
+                    return card.id == checkoutData.getPaytypeId();
+                }).paytype;
+
+                $.ajax({
+                    method: "POST",
+                    url: window.checkoutConfig.payment.dibsFlexwin.getPlaceOrderUrl,
+                    data: {
+                        paytype: paytype,
+                        cartid: quote.getQuoteId(),
+                        orderid: this.placeOrderResult
+                    },
+                    dataType: 'json'
+                })
+                    .done(function (jsonResponse) {
+                        if (jsonResponse.result == 'success') {
+                            var requestDataArr = [];
+                            this.requestData.subscribe(function () {
+                                $('#payment-form-dibs').submit();
+                            });
+                            $.each(jsonResponse.params, function (name, value) {
+                                requestDataArr.push({'name': name, 'value': value});
+                            });
+                            this.requestData(requestDataArr);
+                        } else {
+                            alert(jsonResponse.message);
+                            window.location.href = url.build('checkout/cart');
+                        }
+                    }.bind(this));
             },
 
             getData: function () {
-                var obj = storage.get('checkout-data');
                 return {
                     "method": this.item.method,
                     'po_number': null,
@@ -122,17 +147,12 @@ define(
             },
 
             setCustomPaymentMethod: function (data, event) {
-                var self = this;
-                selectPaymentMethodAction({
-                    "method": this.item.method,
-                    "po_number": null,
-                    "additional_data": null
-                });
-                checkoutData.setSelectedPaymentMethod(event.target.id);
-                var obj = storage.get('checkout-data');
-                obj.paytypeId = event.target.id;
-                this.getDibsPaytype(obj.paytypeId);
-                storage.set('checkout-data', obj);
+                var paytypeId = event.target.id;
+
+                selectPaymentMethodAction(this.getData());
+                checkoutData.setSelectedPaymentMethod(paytypeId);
+                checkoutData.setPaytypeId(paytypeId);
+
                 return true;
             },
 
