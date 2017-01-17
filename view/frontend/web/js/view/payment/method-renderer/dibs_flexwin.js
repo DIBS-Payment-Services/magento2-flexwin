@@ -23,10 +23,16 @@ define(
                 imgWidth: window.checkoutConfig.payment.dibsFlexwin.logoWith
             },
 
-            getDibsPaytype: ko.observable(function () {
-                return checkoutData.getPaytypeId();
+            initialize: function() {
+                this._super();
 
-            }),
+                this.isChecked = ko.computed(function() {
+                    return (quote.paymentMethod() && quote.paymentMethod().method == this.item.method) ?
+                        checkoutData.getPaytypeId() : null;
+                }, this);
+
+                return this;
+            },
 
             getDibsActionFormUrl: function () {
                 return window.checkoutConfig.payment.dibsFlexwin.formActionUrl;
@@ -142,22 +148,14 @@ define(
                 };
             },
 
-            customMethodDisabled: function () {
-                return false;
-            },
-
             setCustomPaymentMethod: function (data, event) {
                 var paytypeId = event.target.id;
 
                 selectPaymentMethodAction(this.getData());
-                checkoutData.setSelectedPaymentMethod(paytypeId);
+                checkoutData.setSelectedPaymentMethod(this.item.method);
                 checkoutData.setPaytypeId(paytypeId);
 
                 return true;
-            },
-
-            getMethodCode: function () {
-                return this.item.method;
             },
 
             getInstructions: function () {

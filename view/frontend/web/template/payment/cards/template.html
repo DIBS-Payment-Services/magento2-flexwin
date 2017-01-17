@@ -1,9 +1,9 @@
-<div class="payment-method" data-bind="css: {'_active': ( $parent.getMethodCode() == $parent.isChecked() && $parent.getDibsPaytype() == $data.id)}">
+<div class="payment-method" data-bind="css: {'_active': ($data.id == $parent.isChecked())}">
     <div class="payment-method-title field choice">
         <input type="radio"
                name="payment[method]"
                class="radio"
-               data-bind="attr: {'id': $data.id}, value: $data.id, checked: $parent.getDibsPaytype(), click: $parent.setCustomPaymentMethod.bind($parent)"/>
+               data-bind="attr: {'id': $data.id}, value: $data.id, checked: $parent.isChecked, click: $parent.setCustomPaymentMethod.bind($parent)"/>
         <label data-bind="attr: {'for': $data.id}" class="label">
             <img data-bind="attr: {src: $parent.imgUrl($data.imgNumber), width: $parent.imgWidth}"
                  class="payment-icon"/>
@@ -29,7 +29,7 @@
                         data-bind="
                         click: $parent.placeOrder.bind($parent),
                         attr: {title: $t('Place Order')},
-                        enable: ($parent.getMethodCode() == $parent.isChecked() && $parent.getDibsPaytype() == $data.id),
+                        enable: ($data.id == $parent.isChecked()),
                         css: {disabled: !$parent.isPlaceOrderActionAllowed()}
                         "
                         disabled>
