@@ -26,17 +26,13 @@ define(
             initialize: function() {
                 this._super();
 
-                // when dibs is preselected as the only available payment method, preselect first paytype as well
-                quote.paymentMethod.subscribe(function() {
-                    if (quote.paymentMethod() && quote.paymentMethod().method == this.item.method
-                        && !checkoutData.getPaytypeId()
-                    ) {
-                        var types = this.getEnabledPaytypes();
-                        if (types) {
-                            checkoutData.setPaytypeId(types[0].id);
-                        }
+                // when Dibs is preselected as the only available payment method, make sure paytype is selected
+                if (!checkoutData.getPaytypeId()) {
+                    var types = this.getEnabledPaytypes();
+                    if (types) {
+                        checkoutData.setPaytypeId(types[0].id);
                     }
-                }.bind(this));
+                }
 
                 this.isChecked = ko.computed(function() {
                     return (quote.paymentMethod() && quote.paymentMethod().method == this.item.method) ?
