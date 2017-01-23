@@ -26,6 +26,18 @@ define(
             initialize: function() {
                 this._super();
 
+                // when dibs is preselected as the only available payment method, preselect first paytype as well
+                quote.paymentMethod.subscribe(function() {
+                    if (quote.paymentMethod() && quote.paymentMethod().method == this.item.method
+                        && !checkoutData.getPaytypeId()
+                    ) {
+                        var types = this.getEnabledPaytypes();
+                        if (types) {
+                            checkoutData.setPaytypeId(types[0].id);
+                        }
+                    }
+                }.bind(this));
+
                 this.isChecked = ko.computed(function() {
                     return (quote.paymentMethod() && quote.paymentMethod().method == this.item.method) ?
                         checkoutData.getPaytypeId() : null;
@@ -138,14 +150,6 @@ define(
                             window.location.href = url.build('checkout/cart');
                         }
                     }.bind(this));
-            },
-
-            getData: function () {
-                return {
-                    "method": this.item.method,
-                    'po_number': null,
-                    "additional_data": null
-                };
             },
 
             setCustomPaymentMethod: function (data, event) {
