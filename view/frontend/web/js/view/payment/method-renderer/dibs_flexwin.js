@@ -2,20 +2,20 @@
 /*global define*/
 define(
     [
-        'Magento_Checkout/js/view/payment/default',
-        'Dibs_Flexwin/js/action/set-payment-method',
-        'Magento_Checkout/js/action/select-payment-method',
-        'Magento_Checkout/js/checkout-data',
-        'Magento_Customer/js/customer-data',
         'ko',
         'jquery',
-        'Magento_Checkout/js/model/payment/additional-validators'
+        'underscore',
+        'Magento_Checkout/js/view/payment/default',
+        'Magento_Checkout/js/action/select-payment-method',
+        'Magento_Checkout/js/model/quote',
+        'Magento_Checkout/js/checkout-data',
+        'mage/url'
     ],
-    function (Component, setPaymentMethodAction, selectPaymentMethodAction,
-              checkoutData, storage, ko, $, additionalValidators) {
+    function (ko, $, _, Component, selectPaymentMethodAction, quote, checkoutData, url) {
         'use strict';
         return Component.extend({
             redirectAfterPlaceOrder: false,
+            placeOrderResult: null,
 
             defaults: {
                 template: 'Dibs_Flexwin/payment/dibs_flexwin',
@@ -23,11 +23,24 @@ define(
                 imgWidth: window.checkoutConfig.payment.dibsFlexwin.logoWith
             },
 
-            getDibsPaytype: ko.observable(function () {
-                var obj = storage.get('checkout-data');
-                return obj.paytypeId;
+            initialize: function() {
+                this._super();
 
-            }),
+                // when Dibs is preselected as the only available payment method, make sure paytype is selected
+                if (!checkoutData.getPaytypeId()) {
+                    var types = this.getEnabledPaytypes();
+                    if (types) {
+                        checkoutData.setPaytypeId(types[0].id);
+                    }
+                }
+
+                this.isChecked = ko.computed(function() {
+                    return (quote.paymentMethod() && quote.paymentMethod().method == this.item.method) ?
+                        checkoutData.getPaytypeId() : null;
+                }, this);
+
+                return this;
+            },
 
             getDibsActionFormUrl: function () {
                 return window.checkoutConfig.payment.dibsFlexwin.formActionUrl;
@@ -95,49 +108,54 @@ define(
                 var urlPrefix = window.checkoutConfig.payment.dibsFlexwin.cdnUrlLogoPrefix + imgNumber + '.png';
                 return urlPrefix;
             },
-            
-            placeOrder: function () {
-                var self = this;
-                var obj = storage.get('checkout-data');
-                if (self.validate() && additionalValidators.validate() ) {
-                    self.selectPaymentMethod();
-                    setPaymentMethodAction(this.messageContainer, self.requestData,
-                        _.find(this.getEnabledPaytypes(), function (card) {
-                            return card.id == obj.paytypeId;
-                        }).paytype);
-                }
+
+            getPlaceOrderDeferredObject: function () {
+                return this._super().done(function(data) {
+                    // store response for use in afterPlaceOrder
+                    this.placeOrderResult = data;
+                }.bind(this));
             },
 
-            getData: function () {
-                var obj = storage.get('checkout-data');
-                return {
-                    "method": this.item.method,
-                    'po_number': null,
-                    "additional_data": null
-                };
-            },
+            afterPlaceOrder: function() {
+                var paytype = _.find(this.getEnabledPaytypes(), function (card) {
+                    return card.id == checkoutData.getPaytypeId();
+                }).paytype;
 
-            customMethodDisabled: function () {
-                return false;
+                $.ajax({
+                    method: "POST",
+                    url: window.checkoutConfig.payment.dibsFlexwin.getPlaceOrderUrl,
+                    data: {
+                        paytype: paytype,
+                        cartid: quote.getQuoteId(),
+                        orderid: this.placeOrderResult
+                    },
+                    dataType: 'json'
+                })
+                    .done(function (jsonResponse) {
+                        if (jsonResponse.result == 'success') {
+                            var requestDataArr = [];
+                            this.requestData.subscribe(function () {
+                                $('#payment-form-dibs').submit();
+                            });
+                            $.each(jsonResponse.params, function (name, value) {
+                                requestDataArr.push({'name': name, 'value': value});
+                            });
+                            this.requestData(requestDataArr);
+                        } else {
+                            alert(jsonResponse.message);
+                            window.location.href = url.build('checkout/cart');
+                        }
+                    }.bind(this));
             },
 
             setCustomPaymentMethod: function (data, event) {
-                var self = this;
-                selectPaymentMethodAction({
-                    "method": this.item.method,
-                    "po_number": null,
-                    "additional_data": null
-                });
-                checkoutData.setSelectedPaymentMethod(event.target.id);
-                var obj = storage.get('checkout-data');
-                obj.paytypeId = event.target.id;
-                this.getDibsPaytype(obj.paytypeId);
-                storage.set('checkout-data', obj);
-                return true;
-            },
+                var paytypeId = event.target.id;
 
-            getMethodCode: function () {
-                return this.item.method;
+                selectPaymentMethodAction(this.getData());
+                checkoutData.setSelectedPaymentMethod(this.item.method);
+                checkoutData.setPaytypeId(paytypeId);
+
+                return true;
             },
 
             getInstructions: function () {
