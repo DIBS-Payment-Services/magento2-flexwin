@@ -11,21 +11,53 @@
 
                     <field id="merchant" translate="label comment" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Merchantid:</label>
-                        <comment>Merchant id</comment>
+                        <comment>Shop identification. The Merchant ID appears in the e-mail received from DIBS during registration with DIBS or on your contract.</comment>
                         <config_path>payment/dibs_flexwin/merchant</config_path>
                     </field>
 
+                    <field id="api_user" translate="label comment" type="password" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Api user:</label>
+                        <comment>Api user</comment>
+                        <config_path>payment/dibs_flexwin/api_user</config_path>
+                    </field>
+
+                    <field id="api_password" translate="label comment" type="password" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Api password:</label>
+                        <comment>Api password</comment>
+                        <config_path>payment/dibs_flexwin/api_password</config_path>
+                    </field>
+                
                     <field id="test" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Testmode:</label>
+                        <comment>When this field is declared, the transaction is not dispatched to the card issuer,
+                            but is instead handled by the DIBS test environment. When the shop goes live, the test system is normally disabled,
+                            and should the shop want to use the test mode at a later date the DIBS support can be contacted for reactivation.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/dibs_flexwin/testmode</config_path>
                     </field>
 
+                    <field id="calcfee" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Calcfee: </label>
+                        <comment>If this parameter is sent with the value "yes", the charge from the acquirer due to the
+                            transaction will automatically be calculated and affixed.</comment>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/calcfee</config_path>
+                    </field>
+
                     <field id="capturenow" translate="label" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Capturenow:</label>
-                        <comment>If this field exists, a capture request is automatically carried out after the authorization, following the normal capture process of the specific acquirer.</comment>
+                        <comment>If this field exists, a capture request is automatically carried out after the authorization,
+                            following the normal capture process of the specific acquirer.</comment>
                         <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                         <config_path>payment/dibs_flexwin/capturenow</config_path>
+                    </field>
+                    
+                    <field id="makeinvoice" translate="label" type="select" sortOrder="17" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Create invoice:</label>
+                        <comment>If set invoice will be created automatically if Capturenow is set.</comment>
+                        <backend_model>Dibs\Flexwin\Model\Config\Backend\Makeinvoice</backend_model>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/makeinvoice</config_path>
                     </field>
 
                     <field id="active" translate="label" type="select" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -36,12 +68,18 @@
 
                     <field id="decorator" translate="label" type="select" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="0">
                         <label>Decorator:</label>
+                        <comment>Specifies which of the pre-built decorators to use.
+                            Possible values are "default", "basal", "rich" and "responsive"
+                            ("Responsive" results in a new design created by DIBS,
+                            which makes the payment window scale automatically to various devices
+                            and screen sizes. You must set icons to Large in your DIBS Admin).</comment>
                         <source_model>Dibs\Flexwin\Model\Config\Source\Decorator</source_model>
                         <config_path>payment/dibs_flexwin/decorator</config_path>
                     </field>
 
                     <field id="lang" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                         <label>Language:</label>
+                        <comment>This parameter determines the language in which the page will be displayed. </comment>
                         <source_model>Dibs\Flexwin\Model\Config\Source\Language</source_model>
                         <config_path>payment/dibs_flexwin/lang</config_path>
                     </field>
@@ -113,7 +151,6 @@
                         <config_path>payment/dibs_flexwin/card_dankort</config_path>
                     </field>
                 </group>
-
                 <group id="dibs_flexwin_wallets" translate="label" type="text" sortOrder="34" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Wallets:</label>
                     <field id="mobilepay" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
@@ -122,7 +159,29 @@
                         <config_path>payment/dibs_flexwin/mobilepay</config_path>
                     </field>
                 </group>
-
+                <group id="dibs_flexwin_directbank" translate="label" type="text" sortOrder="34" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Directbanks:</label>
+                    <field id="swedbank" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Swedbank:</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/swedbank</config_path>
+                    </field>
+                    <field id="seb" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>SEB Bank:</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/seb</config_path>
+                    </field>
+                    <field id="paypal" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Paypal:</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/paypal</config_path>
+                    </field>
+                    <field id="nordea" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="0">
+                        <label>Nordea Solo-E betaling (Sweden):</label>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <config_path>payment/dibs_flexwin/nordea</config_path>
+                    </field>
+                </group>
             </group>
         </section>
     </system>

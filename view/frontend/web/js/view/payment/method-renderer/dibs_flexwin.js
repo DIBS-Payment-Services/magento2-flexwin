@@ -47,66 +47,18 @@ define(
             },
 
             getEnabledPaytypes: function () {
-                var configKey = window.checkoutConfig.payment.dibsFlexwin;
-                var cardsArr =
-                    [
-                        {
-                            id: 'dibs_flexwin_cards_visa',
-                            title: $.mage.__('Visa'),
-                            imgNumber: '07',
-                            paytype: 'VISA',
-                            enabled: configKey.paytype.visa
-                        },
-                        {
-                            id: 'dibs_flexwin_cards_master',
-                            title: $.mage.__('Master'),
-                            imgNumber: '01',
-                            paytype: 'MC',
-                            enabled: configKey.paytype.master
-                        },
-                        {
-                            id: 'dibs_flexwin_cards_amex',
-                            title: $.mage.__('Amex'),
-                            imgNumber: '06',
-                            paytype: 'AMEX',
-                            enabled: configKey.paytype.amex
-                        },
-                        {
-                            id: 'dibs_flexwin_cards_diners',
-                            title: $.mage.__('Diners'),
-                            imgNumber: '04',
-                            paytype: 'DIN',
-                            enabled: configKey.paytype.diners
-                        },
-                        {
-                            id: 'dibs_flexwin_cards_dankort',
-                            title: $.mage.__('Dankort'),
-                            imgNumber: '03',
-                            paytype: 'DK',
-                            enabled: configKey.paytype.dankort
-                        },
-                        {
-                            id: 'dibs_flexwin_mobilepay',
-                            title: $.mage.__('MobilePay'),
-                            imgNumber: '10',
-                            paytype: 'MPO_Nets',
-                            enabled: configKey.paytype.mobilepay
-                        }
-                    ];
-
-                return _.filter(cardsArr, function (card) {
-                    return card.enabled == 1;
+                var paytypes = [];
+                _.each(window.checkoutConfig.payment.dibsFlexwin.paytype, function( val, key ) {
+                     paytypes.push(val);
+                });
+                return _.filter(paytypes, function (paytype) {
+                    return paytype.enabled == 1;
                 });
             },
 
             initObservable: function () {
                 this._super().observe('requestData');
                 return this;
-            },
-
-            imgUrl: function (imgNumber) {
-                var urlPrefix = window.checkoutConfig.payment.dibsFlexwin.cdnUrlLogoPrefix + imgNumber + '.png';
-                return urlPrefix;
             },
 
             getPlaceOrderDeferredObject: function () {

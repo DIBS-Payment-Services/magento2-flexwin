@@ -6,18 +6,21 @@ use Magento\Framework\Event\ObserverInterface;
 
 class availabilityValidator implements ObserverInterface
 {
+    protected $config;
+
+    public function __construct(\Dibs\Flexwin\Model\ConfigProvider $config) {
+        $this->config = $config;
+    }
+
     public function execute(\Magento\Framework\Event\Observer $observer)
     {
         $methodInstance = $observer['method_instance'];
         if($methodInstance->getCode() == \Dibs\Flexwin\Model\ConfigProvider::METHOD_CODE) {
-            $paytypes = array(
-                        $methodInstance->getConfigData('card_visa'),
-                        $methodInstance->getConfigData('card_master'),
-                        $methodInstance->getConfigData('card_amex'),
-                        $methodInstance->getConfigData('card_diners'),
-                        $methodInstance->getConfigData('card_dankort'),
-                        $methodInstance->getConfigData('mobilepay'));
-            if(!in_array('1', $paytypes)) {
+            // Don not show this payment methos if all paytypes is disabled
+            $arr = $this->config->getConfig();
+            $arr = $arr['payment']['dibsFlexwin']['paytype'];
+            $enabledPaytypes = array_filter($arr, function ($a) {return $a['enabled'] == 1;});
+            if(!$enabledPaytypes) {
               $checkResult = $observer['result'];
               $checkResult->setData('is_available', false);
             }

@@ -3,7 +3,8 @@
 namespace Dibs\Flexwin\Model;
 
 use Magento\Payment\Helper\Data as PaymentHelper;
-
+use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Sales\Model\Order\Invoice;
 class Method
 {
     protected $quote;
@@ -16,6 +17,9 @@ class Method
     protected $order;
     protected $orderSender;
     protected $scopeConfig;
+    protected $invoiceService;
+    protected $_objectManager;
+    protected $registry;
 
     const KEY_CURRENCY_NAME    = 'currency';
     const KEY_MERCHANT_NAME    = 'merchant';
@@ -32,10 +36,18 @@ class Method
     const KEY_CAPTURENOW_NAME  = 'capturenow';
     const KEY_MD5_KEY1_NAME    = 'md5key1';
     const KEY_MD5_KEY2_NAME    = 'md5key2';
-
+    const KEY_CALCFEE_NAME     = 'calcfee';
+    
     const RETURN_CONTEXT_ACCEPT   = 'accept';
     const RETURN_CONTEXT_CALLBACK = 'callback';
 
+    const API_OPERATION_SUCCESS = 'ACCEPTED';
+    const API_OPERATION_FAILURE = 'DECLINED';
+    
+    const CAPTURE_URL = 'https://payment.architrade.com/cgi-bin/capture.cgi';
+    
+    const REFUND_URL_PATTERN = 'https://login:password@payment.architrade.com/cgi-adm/refund.cgi';
+    
     public function __construct(
         \Magento\Quote\Model\Quote $quote,
         \Magento\Framework\UrlInterface $urlInterface,
@@ -44,8 +56,9 @@ class Method
         \Magento\Framework\App\Request\Http $request,
         \Magento\Sales\Model\Order $order,
         \Magento\Sales\Model\Order\Email\Sender\OrderSender $orderSender,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-
+        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
+        \Magento\Framework\ObjectManagerInterface $_objectManager
     ) {
         $this->quote = $quote;
         $this->urlInterface = $urlInterface;
@@ -56,7 +69,8 @@ class Method
         $this->order = $order;
         $this->orderSender = $orderSender;
         $this->scopeConfig = $scopeConfig;
-        
+        $this->invoiceService = $invoiceService;
+        $this->_objectManager = $_objectManager;
     }
 
     /**
@@ -87,7 +101,7 @@ class Method
                 self::KEY_CALLBACKURL_NAME => $this->urlInterface->getDirectUrl('dibsflexwin/index/callback')
             );
 
-            if ($this->methodObj->getConfigData(self::KEY_TESTMODE_NAME) == '1') {
+            if ($this->methodObj->getConfigData(self::KEY_TESTMODE_NAME) == 1) {
                 $requestParams['params']['test'] = 1;
             }
             if ($this->methodObj->getConfigData(self::KEY_DECORATOR_NAME)) {
@@ -97,6 +111,9 @@ class Method
                 $langCode = $this->scopeConfig->getValue('payment/' . ConfigProvider::METHOD_CODE . 
                         '/' . self::KEY_LANG_NAME, \Magento\Store\Model\ScopeInterface::SCOPE_STORES);
                 $requestParams['params'][self::KEY_LANG_NAME] = $langCode;
+            }
+            if ($this->methodObj->getConfigData(self::KEY_CALCFEE_NAME) == 1) {
+                $requestParams['params'][self::KEY_CALCFEE_NAME] = 'yes';
             }
             $macCodeParams = array(
                 self::KEY_MERCHANT_NAME => $requestParams['params'][self::KEY_MERCHANT_NAME],
@@ -203,22 +220,25 @@ class Method
                 return;
             }
         }
-
         $order = $this->setReturnedParamsToOrder($context);
-
         if (!$order->getEmailSent()) {
             $this->orderSender->send($order);
         }
         $order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING);
         $this->setCustomOrderStatus('order_status');
-
+        if($this->shouldMakeInvoice() && $order->canInvoice()) {
+            $invoice = $this->invoiceService->prepareInvoice($order);
+            $payment = $order->getPayment();
+            $this->capture($invoice, $payment);
+        } 
         $order->setIsNotified(false);
         $order->save();
     }
 
     public static function api_dibs_round($fNum, $iPrec = 2)
     {
-        return empty($fNum) ? (int) 0 : (int) (string) (round($fNum, $iPrec) * pow(10, $iPrec));
+        return empty($fNum) ? (int) 0 : (int) (string)
+                (round($fNum, $iPrec) * pow(10, $iPrec));
     }
 
     /**
@@ -286,4 +306,40 @@ class Method
             $this->order->setStatus($orderStatus);
         }
     }
+
+    protected function capture($invoice, $payment) {
+         try {
+                $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
+                $invoice->setTransactionId($payment->getLastTransId());
+                $invoice->register();
+                $transactionSave = $this->_objectManager->create(
+                    'Magento\Framework\DB\Transaction'
+                )->addObject(
+                    $invoice
+                )->addObject(
+                    $invoice->getOrder()
+                );
+                $transactionSave->save();
+            } catch(\Exception $e) {
+                // catch and continue
+            }
+    }
+
+    protected function updateTotals(OrderPaymentInterface $payment, $data)
+    {
+        foreach ($data as $key => $amount) {
+            if (null !== $amount) {
+                $was = $payment->getDataUsingMethod($key);
+                $payment->setDataUsingMethod($key, $was + $amount);
+            }
+        }
+    }
+
+    protected function shouldMakeInvoice() {
+        return (null !== $this->request->getParam('capturenow'))
+                && ($this->request->getParam('capturenow') == 1)
+                && ($this->methodObj->getConfigData('makeinvoice') == 1)
+                ? true : false;
+    }
+
 }
