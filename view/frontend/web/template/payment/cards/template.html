@@ -11,7 +11,14 @@
         </label>
     </div>
     <div class="payment-method-content">
-        <div class="checkout-agreements-block">
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parents[1].getRegion($parent.getBillingAddressFormName()) -->
+                <!-- ko if: $parent = $parents[1] -->
+                    <!-- ko template: getTemplate()--><!-- /ko -->
+                <!--/ko-->
+            <!--/ko-->
+        </div>
+        <div class="checkout-message-block">
             <span data-bind="i18n: 'You will be redirected to DIBS payment window..'"></span>
         </div>
         <form id="payment-form-dibs" data-bind="foreach: $parent.requestData, attr: {action : $parent.getDibsActionFormUrl() }" method="POST">

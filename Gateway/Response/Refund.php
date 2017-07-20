@@ -14,7 +14,6 @@ class Refund extends ResponseHandler implements HandlerInterface {
            throw new \Magento\Framework\Exception\LocalizedException(__($msg));
         }
         if($response['status'] == \Dibs\Flexwin\Model\Method::API_OPERATION_SUCCESS) {
-            $this->handleTransaction($handlingSubject['payment']);
             $this->message->addSuccess(__('Transaction was refunded'));
         }
     }

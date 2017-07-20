@@ -32,10 +32,4 @@ class ResponseHandler {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
     }
-
-    public function handleTransaction(PaymentDataObject $payment) { 
-       $payment = $payment->getPayment();
-       $payment->setTransactionId($payment->getLastTransId());
-       $payment->setIsTransactionClosed(false);
-    }
 }

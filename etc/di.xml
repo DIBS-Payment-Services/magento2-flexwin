@@ -38,6 +38,7 @@
             <argument name="commands" xsi:type="array">
                 <item name="capture" xsi:type="string">DibsFlexwinCaptureGatewayCommand</item>
                 <item name="refund" xsi:type="string">DibsFlexwinRefundGatewayCommand</item>
+                <item name="void" xsi:type="string">DibsFlexwinVoidGatewayCommand</item>
             </argument>
         </arguments>
     </virtualType>
@@ -47,6 +48,11 @@
         </arguments>
     </type>
     <type name="Dibs\Flexwin\Gateway\Request\Refund">
+        <arguments>
+            <argument name="config" xsi:type="object">DibsFlexwinConfig</argument>
+        </arguments>
+    </type>
+    <type name="Dibs\Flexwin\Gateway\Request\Void">
         <arguments>
             <argument name="config" xsi:type="object">DibsFlexwinConfig</argument>
         </arguments>
@@ -63,6 +69,14 @@
         <arguments>
             <argument name="requestBuilder" xsi:type="object">Dibs\Flexwin\Gateway\Request\Capture</argument>
             <argument name="handler" xsi:type="object">Dibs\Flexwin\Gateway\Response\Capture</argument>
+            <argument name="transferFactory" xsi:type="object">Dibs\Flexwin\Gateway\Http\TransferFactory</argument>
+            <argument name="client" xsi:type="object">Dibs\Flexwin\Gateway\Http\Client</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="DibsFlexwinVoidGatewayCommand" type="Magento\Payment\Gateway\Command\GatewayCommand">
+        <arguments>
+            <argument name="requestBuilder" xsi:type="object">Dibs\Flexwin\Gateway\Request\Void</argument>
+            <argument name="handler" xsi:type="object">Dibs\Flexwin\Gateway\Response\Void</argument>
             <argument name="transferFactory" xsi:type="object">Dibs\Flexwin\Gateway\Http\TransferFactory</argument>
             <argument name="client" xsi:type="object">Dibs\Flexwin\Gateway\Http\Client</argument>
         </arguments>
