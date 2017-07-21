@@ -42,6 +42,7 @@ class Method
     const KEY_MD5_KEY1_NAME    = 'md5key1';
     const KEY_MD5_KEY2_NAME    = 'md5key2';
     const KEY_CALCFEE_NAME     = 'calcfee';
+    const KEY_TRANSACT_NAME    = 'transact';
     
     const RETURN_CONTEXT_ACCEPT   = 'accept';
     const RETURN_CONTEXT_CALLBACK = 'callback';
