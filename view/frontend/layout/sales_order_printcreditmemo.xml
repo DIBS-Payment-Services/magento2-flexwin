@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="creditmemo_totals">
+            <block class="Dibs\Flexwin\Block\Sales\Totals" name="dibs.fee.creditmemo.totals.print" as="dibs_fee_amount"/>
+        </referenceBlock>
+    </body>
+</page>

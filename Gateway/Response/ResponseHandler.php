@@ -27,8 +27,7 @@ class ResponseHandler {
 
     protected function preHandleValidate(array $handlingSubject) {
         if (!isset($handlingSubject['payment'])
-            || !$handlingSubject['payment'] instanceof PaymentDataObjectInterface
-        ) {
+            || !$handlingSubject['payment'] instanceof PaymentDataObjectInterface) {
             throw new \InvalidArgumentException('Payment data object should be provided');
         }
     }

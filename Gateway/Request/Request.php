@@ -6,6 +6,8 @@ use Magento\Payment\Gateway\ConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Api\Data\OrderPaymentInterface;
+use Magento\Payment\Helper\Data as PaymentHelper;
+
 
 class Request {
 
@@ -15,16 +17,25 @@ class Request {
     protected $config;
     protected $storeManager;
     protected $payment;
+    protected $method;
+    protected $paymentHelper;
+    protected $subjectReader;
 
     /**
      * @param ConfigInterface $config
      */
     public function __construct(
         ConfigInterface $config,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        \Dibs\Flexwin\Model\Method $method,
+        PaymentHelper $paymentHelper,
+        \Magento\Payment\Gateway\Helper\SubjectReader $subjectReader
     ) {
         $this->config = $config;
         $this->storeManager = $storeManager;
+        $this->method = $method;
+        $this->paymentHelper = $paymentHelper;
+        $this->subjectReader = $subjectReader;
     }
 
     protected function preRequestValidate(array $buildSubject) {
@@ -53,5 +64,4 @@ class Request {
         $currency = $this->storeManager->getStore()->getBaseCurrency();
         return $currency->convert($amount, $currencyCode);
     }
-
 }

@@ -8,4 +8,12 @@
         <observer name="Dibs_Fexwin_Availability_Validate"
                   instance="Dibs\Flexwin\Observer\availabilityValidator"/>
     </event>
+    <event name="sales_order_payment_capture">
+        <observer name="Dibs_Fexwin_Order_Capture"
+                  instance="Dibs\Flexwin\Observer\captureOrder"/>
+    </event>
+     <event name="sales_order_creditmemo_refund">
+        <observer name="Dibs_Fexwin_Creditmemo_Refund"
+                  instance="Dibs\Flexwin\Observer\creditmemoRefund"/>
+    </event>
  </config>
