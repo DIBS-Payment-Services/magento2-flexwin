@@ -39,6 +39,7 @@
                 <item name="capture" xsi:type="string">DibsFlexwinCaptureGatewayCommand</item>
                 <item name="refund" xsi:type="string">DibsFlexwinRefundGatewayCommand</item>
                 <item name="void" xsi:type="string">DibsFlexwinVoidGatewayCommand</item>
+                <item name="cancel" xsi:type="string">DibsFlexwinVoidGatewayCommand</item>
             </argument>
         </arguments>
     </virtualType>
