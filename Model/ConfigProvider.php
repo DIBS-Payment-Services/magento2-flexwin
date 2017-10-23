@@ -17,17 +17,24 @@ class ConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
      */
     protected $escaper;
 
+    /**
+     * @var \Magento\Framework\App\ProductMetadataInterface
+     */
+    protected $productMetadata;
+
     public function __construct(
         PaymentHelper $paymentHelper,
         Escaper $escaper,
         \Magento\Framework\UrlInterface $urlInterface,
-        \Magento\Framework\View\Asset\Repository $assetRepo
+        \Magento\Framework\View\Asset\Repository $assetRepo,
+        \Magento\Framework\App\ProductMetadataInterface $productMetadata
 
     ) {
         $this->escaper = $escaper;
         $this->method = $paymentHelper->getMethodInstance(self::METHOD_CODE);
         $this->urlInterface = $urlInterface;
         $this->assetRepo = $assetRepo;
+        $this->productMetadata = $productMetadata;
     }
 
     public function getConfig()
@@ -89,7 +96,8 @@ class ConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
                         'getPlaceOrderUrl' => $this->urlInterface->getDirectUrl($this->method->getConfigData('place_order_url')),
                         'formActionUrl'    => $this->method->getConfigData('form_action_url'),
                         'logoWith'         => $this->method->getConfigData('logo_with'),
-                        'test'             => $this->method->getConfigData('testmode')
+                        'test'             => $this->method->getConfigData('testmode'),
+                        'magentoVersion'   => $this->productMetadata->getVersion(),
                 ]
             ]
         ];
