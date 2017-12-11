@@ -149,16 +149,19 @@ class Method
 
             // Shipping info
             $shippigAddress = $order->getShippingAddress();
-            $requestParams['params']['delivery11.Delivery'] = 'Shipping Address';
-            $requestParams['params']['delivery12.Firstname'] = $shippigAddress->getFirstname();
-            $requestParams['params']['delivery13.Lastname'] = $shippigAddress->getLastname();
-            $requestParams['params']['delivery14.Street'] = $shippigAddress->getStreet();
-            $requestParams['params']['delivery15.Postcode'] = $shippigAddress->getPostcode();
-            $requestParams['params']['delivery16.City'] = $shippigAddress->getCity();
-            $requestParams['params']['delivery17.Region'] = $shippigAddress->getRegionId();
-            $requestParams['params']['delivery18.Country'] = $shippigAddress->getCountryId();
-            $requestParams['params']['delivery19.Telephone'] = $shippigAddress->getTelephone();
-            $requestParams['params']['delivery10.E-mail'] = $shippigAddress->getEmail();
+            //check order has Shipping Address - it`s null for virtal quote
+            if ($shippigAddress) {
+                $requestParams['params']['delivery11.Delivery'] = 'Shipping Address';
+                $requestParams['params']['delivery12.Firstname'] = $shippigAddress->getFirstname();
+                $requestParams['params']['delivery13.Lastname'] = $shippigAddress->getLastname();
+                $requestParams['params']['delivery14.Street'] = $shippigAddress->getStreet();
+                $requestParams['params']['delivery15.Postcode'] = $shippigAddress->getPostcode();
+                $requestParams['params']['delivery16.City'] = $shippigAddress->getCity();
+                $requestParams['params']['delivery17.Region'] = $shippigAddress->getRegionId();
+                $requestParams['params']['delivery18.Country'] = $shippigAddress->getCountryId();
+                $requestParams['params']['delivery19.Telephone'] = $shippigAddress->getTelephone();
+                $requestParams['params']['delivery10.E-mail'] = $shippigAddress->getEmail();
+            }
         } else {
             $requestParams['result'] = 'error';
             $requestParams['message'] = 'error occured';
