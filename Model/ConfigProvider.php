@@ -10,6 +10,7 @@ class ConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
     protected $method;
     protected $urlInterface;
     protected $assetRepo;
+    protected $formKey;
     const METHOD_CODE = 'dibs_flexwin';
 
     /**
@@ -21,13 +22,15 @@ class ConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
         PaymentHelper $paymentHelper,
         Escaper $escaper,
         \Magento\Framework\UrlInterface $urlInterface,
-        \Magento\Framework\View\Asset\Repository $assetRepo
+        \Magento\Framework\View\Asset\Repository $assetRepo,
+        \Magento\Framework\Data\Form\FormKey $formKey
 
     ) {
         $this->escaper = $escaper;
         $this->method = $paymentHelper->getMethodInstance(self::METHOD_CODE);
         $this->urlInterface = $urlInterface;
         $this->assetRepo = $assetRepo;
+        $this->formKey = $formKey;
     }
 
     public function getConfig()
@@ -89,7 +92,8 @@ class ConfigProvider implements \Magento\Checkout\Model\ConfigProviderInterface
                         'getPlaceOrderUrl' => $this->urlInterface->getDirectUrl($this->method->getConfigData('place_order_url')),
                         'formActionUrl'    => $this->method->getConfigData('form_action_url'),
                         'logoWith'         => $this->method->getConfigData('logo_with'),
-                        'test'             => $this->method->getConfigData('testmode')
+                        'test'             => $this->method->getConfigData('testmode'),
+                        'form_key'         => $this->formKey->getFormKey()
                 ]
             ]
         ];

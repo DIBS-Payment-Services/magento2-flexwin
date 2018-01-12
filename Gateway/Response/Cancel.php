@@ -4,7 +4,7 @@ namespace Dibs\Flexwin\Gateway\Response;
 
 use Magento\Payment\Gateway\Response\HandlerInterface;
 
-class Void extends ResponseHandler implements HandlerInterface {
+class Cancel extends ResponseHandler implements HandlerInterface {
     
     public function handle(array $handlingSubject, array $response) {
         $this->preHandleValidate($handlingSubject);

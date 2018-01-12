@@ -4,7 +4,7 @@ namespace Dibs\Flexwin\Gateway\Request;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Dibs\Flexwin\Model\Method;
 
-class Void extends Request implements BuilderInterface
+class Cancel extends Request implements BuilderInterface
 {
     public function build(array $buildSubject) 
     {
@@ -32,3 +32,4 @@ class Void extends Request implements BuilderInterface
              'orderid'  => $orderId]];
     }
 }
+

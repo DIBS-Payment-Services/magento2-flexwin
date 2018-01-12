@@ -352,7 +352,7 @@ class Method
 
     protected function capture($invoice, $payment) {
          try {
-                $invoice->setRequestedCaptureCase(Invoice::CAPTURE_OFFLINE);
+                $invoice->setRequestedCaptureCase(Invoice::CAPTURE_ONLINE);
                 $invoice->setTransactionId($payment->getLastTransId());
                 $invoice->register();
                 $transactionSave = $this->_objectManager->create(
