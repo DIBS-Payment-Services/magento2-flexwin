@@ -38,13 +38,19 @@ define(
             }
              // some copy-paste from place-order-mixin.js for adding agreements...
             if (agreementsConfig.isEnabled) {
-                    var agreementForm = $('.payment-method._active form[data-role=checkout-agreements]'),
+                var agreementForm = $('.payment-method._active div[data-role=checkout-agreements] input'),
                 agreementData = agreementForm.serializeArray(),
                 agreementIds = [];
-                agreementData.forEach(function(item) {
+
+                agreementData.forEach(function (item) {
                     agreementIds.push(item.value);
                 });
-                paymentData.extension_attributes = {agreement_ids: agreementIds};
+
+                if (paymentData['extension_attributes'] === undefined) {
+                    paymentData['extension_attributes'] = {};
+                }
+
+                paymentData['extension_attributes']['agreement_ids'] = agreementIds;
             }
             fullScreenLoader.startLoader();
             return storage.post(
