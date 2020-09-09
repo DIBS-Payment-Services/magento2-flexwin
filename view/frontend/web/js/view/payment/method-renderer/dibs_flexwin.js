@@ -78,7 +78,14 @@ define(
                 var obj = storage.get('checkout-data');
                 obj.paytypeId = event.target.id;
                 this.getDibsPaytype(obj.paytypeId);
-                storage.set('checkout-data', obj);
+                /**
+                 * The below instruction causes checkout data to be removed when selecting a payment method
+                 * since `obj` refers to a function and not the actual data.
+                 *
+                 * @todo: set payTypeId properly on the observable data and not the observable function
+                 */
+                // storage.set('checkout-data', obj);
+
                 return true;
             },
 
